@@ -24,6 +24,11 @@ data class TripsEntity(
     var arrivalDate: String? = null,
     var departureTime: String? = null,
     var arrivalTime: String? = null,
+    val flightAverageCost: Double? = null,
+    val carAverageCost: Double? = null,
+    val bikeAverageCost: Double? = null,
+    val busAverageCost: Double? = null,
+    val trainAverageCost: Double? = null,
 )
 
 

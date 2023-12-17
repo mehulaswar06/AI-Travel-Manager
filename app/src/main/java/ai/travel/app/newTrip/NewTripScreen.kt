@@ -88,7 +88,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 data class TravelModes(
-    val mode: String,
+    val mode: TravelMode,
     val icon: ImageVector,
 )
 
@@ -101,12 +101,11 @@ fun NewTripScreen(
 ) {
 
     val travelModes = listOf(
-        TravelModes("Flight", Icons.Filled.Flight),
-        TravelModes("Train", Icons.Filled.Train),
-        TravelModes("Bus", Icons.Filled.DirectionsBus),
-        TravelModes("Car", Icons.Filled.ElectricCar),
-        TravelModes("Bike", Icons.Filled.ElectricBike),
-        TravelModes("Walk", Icons.Filled.DirectionsWalk),
+        TravelModes(TravelMode.Flight, Icons.Filled.Flight),
+        TravelModes(TravelMode.Train, Icons.Filled.Train),
+        TravelModes(TravelMode.Bus, Icons.Filled.DirectionsBus),
+        TravelModes(TravelMode.Car, Icons.Filled.ElectricCar),
+        TravelModes(TravelMode.Bike, Icons.Filled.ElectricBike),
     )
     val coroutineScope = rememberCoroutineScope()
 
@@ -566,8 +565,10 @@ fun NewTripScreen(
                             indication = null
                         ) {
                             if (homeViewModel.travelMode.contains(mode.mode)) {
+                                homeViewModel.travelMode.clear()
                                 homeViewModel.travelMode.remove(mode.mode)
                             } else {
+                                homeViewModel.travelMode.clear()
                                 homeViewModel.travelMode.add(mode.mode)
                             }
                         }
@@ -585,7 +586,7 @@ fun NewTripScreen(
                             )
                     ) {
                         Text(
-                            text = mode.mode,
+                            text = mode.mode.name,
                             color = textColor,
                             fontSize = 18.sp,
                             modifier = Modifier.padding(start = 2.dp)
@@ -767,4 +768,12 @@ fun TextFieldWithIcons(
         enabled = isEnabled,
         shape = RoundedCornerShape(20.dp),
     )
+}
+
+enum class TravelMode {
+    Flight,
+    Train,
+    Bus,
+    Car,
+    Bike,
 }

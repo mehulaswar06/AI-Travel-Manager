@@ -8,6 +8,7 @@ import ai.travel.app.dto.ApiPrompt
 import ai.travel.app.dto.PalmApi
 import ai.travel.app.dto.Prompt
 import ai.travel.app.dto.getPlaceId.PlaceIdBody
+import ai.travel.app.newTrip.TravelMode
 import ai.travel.app.repository.ApiService
 import ai.travel.app.tripDetails.TimeSlot
 import android.app.Application
@@ -70,6 +71,9 @@ class HomeViewModel @Inject constructor(
     private val _geoCodesData = MutableStateFlow(emptyList<TourDetails>().toMutableList())
     val geoCodesData: StateFlow<List<TourDetails>> = _geoCodesData.asStateFlow()
 
+    private val _averageCost = MutableStateFlow(emptyList<AverageCost>().toMutableList())
+    val averageCost: StateFlow<List<AverageCost>> = _averageCost.asStateFlow()
+
     fun getTrips(day: String, destination: String): Flow<List<TripsEntity?>> =
         dbRepository.getTrips(day, destination)
 
@@ -95,7 +99,7 @@ class HomeViewModel @Inject constructor(
     val likes = mutableStateOf(TextFieldValue(""))
     val disLikes = mutableStateOf(TextFieldValue(""))
     val tags = mutableStateListOf<String>()
-    val travelMode = mutableStateListOf<String>()
+    val travelMode = mutableStateListOf<TravelMode?>()
     val source = mutableStateOf(TextFieldValue(""))
     val destination = mutableStateOf(TextFieldValue(""))
     val isAnimationVisible = mutableStateOf(false)
@@ -280,6 +284,43 @@ class HomeViewModel @Inject constructor(
                     println("photoIddddd: ${apiData.result}")
                     println("photoIddddd 111: ${_geoCodesData.value[index].placeId}")
                 }
+                if (travelMode.contains(TravelMode.Bike)) {
+                    averageCost.value.toMutableList().add(
+                        AverageCost(mode = TravelMode.Bike, cost = 0.0)
+                    )
+                } else if (travelMode.contains(TravelMode.Car)) {
+                    averageCost.value.toMutableList().add(
+                        AverageCost(mode = TravelMode.Car, cost = 0.0)
+                    )
+                } else if (travelMode.contains(TravelMode.Bus)) {
+                    averageCost.value.toMutableList().add(
+                        AverageCost(mode = TravelMode.Bus, cost = 0.0)
+                    )
+                } else if (travelMode.contains(TravelMode.Train)) {
+                    averageCost.value.toMutableList().add(
+                        AverageCost(mode = TravelMode.Train, cost = 0.0)
+                    )
+                } else if (travelMode.contains(TravelMode.Flight)) {
+                    averageCost.value.toMutableList().add(
+                        AverageCost(mode = TravelMode.Flight, cost = 0.0)
+                    )
+                }
+
+                _averageCost.value.forEach {
+                    val apiData =
+                        repository.getApiData(
+                            ApiPrompt(
+                                prompt = Prompt(
+                                    text = "Generate me average cost from Mumbai to Delhi by " +
+                                            "${it.mode.name}. Give me answer in the format: Average Cost: " +
+                                            "[Answer]. DO not change the format." +
+                                            "I can't tolerate the prompt being changed."
+                                )
+                            )
+                        )
+                    _averageCost.value[0].cost =
+                       extractAverageCost(apiData.candidates?.get(0)?.output ?: "") ?: 0.0
+                }
                 _imageState.value = ApiState.ReceivedPhotoId
                 _geoCodesData.value.forEachIndexed { index, location ->
                     val apiData =
@@ -308,6 +349,33 @@ class HomeViewModel @Inject constructor(
                         arrivalDate = _arrivalDate.value,
                         departureTime = _departureTime.value,
                         arrivalTime = _arrivalTime.value,
+                        flightAverageCost = if (travelMode.contains(TravelMode.Flight)
+                            && _averageCost.value.isNotEmpty()
+                        ) {
+                            _averageCost.value[0].cost
+                        } else {
+                            null
+                        },
+                        carAverageCost = if (travelMode.contains(TravelMode.Car) && _averageCost.value.isNotEmpty()) {
+                            _averageCost.value[0].cost
+                        } else {
+                            null
+                        },
+                        bikeAverageCost = if (travelMode.contains(TravelMode.Bike) && _averageCost.value.isNotEmpty()) {
+                            _averageCost.value[0].cost
+                        } else {
+                            null
+                        },
+                        busAverageCost = if (travelMode.contains(TravelMode.Bus) && _averageCost.value.isNotEmpty()) {
+                            _averageCost.value[0].cost
+                        } else {
+                            null
+                        },
+                        trainAverageCost = if (travelMode.contains(TravelMode.Train) && _averageCost.value.isNotEmpty()) {
+                            _averageCost.value[0].cost
+                        } else {
+                            null
+                        },
                     )
                 })
                 _imageState.value = ApiState.ReceivedPhoto
@@ -629,6 +697,13 @@ class HomeViewModel @Inject constructor(
 
     }
 
+    private fun extractAverageCost(input: String): Double? {
+        val regex = Regex("(?<=Average Cost: )[0-9,.]+")
+        val matchResult = regex.find(input)
+
+        return matchResult?.value?.replace(",", "")?.toDoubleOrNull()
+    }
+
 
 }
 
@@ -650,6 +725,11 @@ sealed class ApiState {
 data class GeoCode(
     val latitude: String,
     val longitude: String,
+)
+
+data class AverageCost(
+    val mode: TravelMode,
+    var cost: Double,
 )
 
 data class TourDetails(
