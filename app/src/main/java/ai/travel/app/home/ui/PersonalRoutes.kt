@@ -151,7 +151,7 @@ fun NewRouteCard(sheetState: BottomSheetScaffoldState, navController: NavControl
 
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "Add New Route",
+                text = "Create New Itinerary",
                 fontSize = 15.sp,
                 color = textColor,
                 modifier = Modifier.weight(1f)

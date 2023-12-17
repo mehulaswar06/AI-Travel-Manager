@@ -258,7 +258,7 @@ fun HomeScreenMain(
                                         )
                                         Spacer(modifier = Modifier.width(10.dp))
                                         Text(
-                                            text = "Personal Routes",
+                                            text = "Your Itinerary",
                                             fontSize = 20.sp,
                                             color = textColor
                                         )
