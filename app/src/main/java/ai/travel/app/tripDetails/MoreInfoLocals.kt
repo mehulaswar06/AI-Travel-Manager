@@ -73,6 +73,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -516,8 +517,8 @@ fun MoreInfoLocals(viewModel: HomeViewModel, paddingValues: PaddingValues) {
                                         ) {
                                             Box(modifier = Modifier.fillMaxSize()) {
 
-                                                Image(
-                                                    painter = painterResource(id = icon.image),
+                                                AsyncImage(
+                                                   model = icon.image,
                                                     contentDescription = "",
                                                     modifier = Modifier.fillMaxSize(),
                                                     contentScale = ContentScale.Crop
